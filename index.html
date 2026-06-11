@@ -176,10 +176,13 @@
                 <div class="divider"></div>
                 <span class="highlight">สรุปและข้อควรระวังประจำวัน:</span> ${randomWarning}
                 <div class="divider"></div>
-                <span class="highlight">เมนูเสริมดวงธาตุ${element}:</span>
+                <span class="highlight">เมนูเสริมดวงธาตุ${element} (5 เมนูแนะนำวันนี้):</span>
                 <div class="menu-box">
-                    ${db.menus[element].map(m => `<div class="menu-item">🍱 ${m}</div>`).join('')}
-                </div>
+                    ${[...db.menus[element]]
+        .sort(() => (dynamicSeed % 3) - 1)
+        .slice(0, 5)
+        .map(m => `<div class="menu-item">🍱 ${m}</div>`).join('')}
+</div>
             `;
         }
     </script>
