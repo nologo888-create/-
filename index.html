@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คอิน ตามสั่ง โหราศาสตร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Mali', cursive; background: linear-gradient(135deg, #e0c3fc 0%, #fbc2eb 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px 0; }
+        .container { background: rgba(255, 255, 255, 0.98); padding: 30px 20px; border-radius: 30px; box-shadow: 0 12px 35px rgba(186, 104, 200, 0.4); text-align: center; max-width: 450px; width: 90%; }
+        h1 { color: #b366ff; font-size: 26px; margin-bottom: 5px; }
+        .subtitle { color: #c084fc; font-size: 14px; margin-bottom: 20px; }
+        input[type="date"] { width: 85%; padding: 12px; border: 2px dashed #c084fc; border-radius: 15px; font-family: 'Mali', cursive; font-size: 16px; margin-bottom: 20px; text-align: center; background: #fdf8ff; }
+        button { background: linear-gradient(45deg, #da70d6, #ba55d3); color: white; border: none; padding: 14px 25px; font-size: 18px; font-weight: 600; border-radius: 25px; cursor: pointer; width: 85%; transition: 0.3s; }
+        button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(186, 104, 200, 0.4); }
+        #result { margin-top: 25px; padding: 20px; background: #fff; border-radius: 20px; border: 2px solid #f3d5ff; color: #444; font-size: 15px; display: none; text-align: left; }
+        .highlight { color: #8e24aa; font-weight: 600; display: block; margin-top: 10px; }
+        .divider { border-top: 1px dashed #e1bee7; margin: 15px 0; }
+        .lucky-numbers { background: #f3e5f5; padding: 10px; border-radius: 10px; text-align: center; font-size: 22px; color: #7b1fa2; font-weight: bold; margin: 15px 0; }
+        .menu-box { background: #fff9e6; border: 1px dashed #ffd54f; border-radius: 15px; padding: 12px; margin-top: 10px; }
+        .menu-item { font-weight: 600; color: #ff8f00; margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔮 เช็คอิน ตามสั่ง โหราศาสตร์</h1>
+        <div class="subtitle">โหราศาสตร์เจาะลึกและเมนูแนะนำตามธาตุ</div>
+        <input type="date" id="birthdate" required>
+        <button onclick="calculateFullFortune()">ผูกดวงและดูเมนูวันนี้ 🪄</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const db = {
+            dayTraits: ["วันอาทิตย์: เป็นคนมีความทะเยอทะยานสูง มีความเป็นผู้นำชัดเจน ชอบการแข่งขันและมักประสบความสำเร็จด้วยลำแข้งตัวเอง", "วันจันทร์: เป็นคนมีเสน่ห์ทางวาจา มีความอ่อนโยนแต่ภายในเข้มแข็ง เข้ากับคนง่ายและมักได้รับความเมตตาจากผู้ใหญ่", "วันอังคาร: สายลุยตัวจริง มีความกล้าหาญ เด็ดขาด รักพวกพ้อง และพร้อมลุยกับทุกปัญหาอย่างไม่เกรงกลัว", "วันพุธ: นักเจรจาผู้ปราดเปรื่อง มีไหวพริบดีเยี่ยม เรียนรู้ไว และเป็นคนมีเหตุผลในการตัดสินใจเสมอ", "วันพฤหัสบดี: ผู้ทรงปัญญา มีความรู้รอบตัวสูง รักความถูกต้อง และมักได้รับโอกาสดีๆ จากบุญกุศลที่สั่งสมมา", "วันศุกร์: ผู้มีสุนทรียภาพสูง รักความสวยงาม รวยเสน่ห์ ชอบความรื่นรมย์และมักมีโชคลาภแบบไม่คาดฝัน", "วันเสาร์: ผู้มีความอดทนดุจหินผา มีความมุ่งมั่นจริงจัง คิดการณ์ไกล และมักจะประสบความสำเร็จในระยะยาว"],
+            lifePath: ["รหัสชีวิต 1: คุณคือผู้บุกเบิก มีความคิดสร้างสรรค์ที่เป็นเอกลักษณ์ ไม่ชอบเดินตามใคร", "รหัสชีวิต 2: คุณคือนักประสานสิบทิศ มีความเห็นอกเห็นใจผู้อื่นสูง ชอบประนีประนอม", "รหัสชีวิต 3: คุณคือศิลปินตัวจริง มีพลังบวกเหลือเฟือ และมีอารมณ์ขันที่ทำให้คนรอบข้างมีความสุข", "รหัสชีวิต 4: คุณคือนักวางแผนที่มั่นคง จริงจังกับชีวิตและทำงานรอบคอบ", "รหัสชีวิต 5: คุณคืออิสระชน รักการผจญภัยและการเปลี่ยนแปลง ชอบเรียนรู้อะไรใหม่ๆ", "รหัสชีวิต 6: คุณคือผู้ดูแล (Caregiver) มีความรับผิดชอบสูงและมักเสียสละเพื่อคนในครอบครัว", "รหัสชีวิต 7: คุณคือนักค้นคว้า มีลางสังหรณ์แม่นยำและชอบใช้เวลาอยู่กับความคิดตัวเอง", "รหัสชีวิต 8: คุณคือนักบริหารผู้มั่งคั่ง มีหัวการค้าและดวงชะตาผูกพันกับความสำเร็จทางการเงิน", "รหัสชีวิต 9: คุณคือผู้ตื่นรู้ มีจิตใจเมตตา มักมีความคิดที่ล้ำสมัยและชอบทำบุญสุนทาน"],
+            fortunes: {
+                w: [
+                   
+			 ["ตามเกณฑ์พระคลังมหาสมบัติ ", "เมื่อดูจากองศาดาวการงาน ", "วิเคราะห์จากพลังดวงชะตา ", "ตรวจพบกระแสพลังงานใหม่ ", "ดวงดาวช่วงนี้บ่งชี้ว่า ", "หากดูจากตำแหน่งดาวจันทร์ ", "พลังงานรอบตัวคุณส่งผลให้ ", "ด้วยอิทธิพลของดวงดาวประจำวัน ", "เมื่อเปิดรหัสชะตาชีวิต ", "การโคจรของดวงดาวเผยว่า "],
+                    ["คุณกำลังจะได้รับโอกาสครั้งใหญ่ ", "การงานเริ่มขยับขยายไปในทางที่ดี ", "โปรเจกต์ที่ค้างคาจะสำเร็จลุล่วง ", "มีสัญญาณบวกเรื่องการเปลี่ยนแปลงตำแหน่ง ", "การงานช่วงนี้จะมีความราบรื่นเป็นพิเศษ ", "งานที่ทำอยู่จะเริ่มส่งผลกำไรให้เห็นชัดเจน ", "คุณจะได้รับความช่วยเหลือจากผู้ใหญ่ ", "จังหวะนี้เหมาะแก่การริเริ่มสิ่งใหม่ ", "ไอเดียของคุณกำลังเป็นที่ยอมรับ ", "มีความคืบหน้าเรื่องการเจรจาธุรกิจ "],
+                    ["การเงินไหลเข้าดีขึ้น มีลาภปากครับ", "การลงทุนให้ผลตอบแทนที่น่าพอใจมาก", "มีเกณฑ์ได้ทรัพย์สินชิ้นใหม่ในเร็ววัน", "จะมีรายรับเข้ามาแบบไม่คาดฝัน", "ฐานะการเงินมีความมั่นคงขึ้นมาก", "ควรวางแผนเรื่องการออมให้ดีเพราะโชคกำลังมา", "จะมีช่องทางทำเงินใหม่ๆ ปรากฏขึ้น", "คุ้มค่าเหนื่อย ผลตอบแทนกำลังงอกเงย", 
+"ดวงการเงินโดดเด่นมากในช่วงนี้", "หยิบจับอะไรก็เป็นเงินเป็นทองครับ"]
+                ],
+                
+l: [
+                    ["ในด้านความสัมพันธ์ ", "เมื่อถอดรหัสจากดวงชะตาช่วงนี้ ", "ดูจากทิศทางของดวงดาวคู่ครอง ", "กระแสรักของคุณในช่วงนี้ ", "หากพิจารณาถึงสัมพันธ์ภาพ ", "ช่วงนี้เสน่ห์ของคุณดึงดูดใจมาก ", "ดวงดาวแห่งความรักกำลังส่องสว่าง ", "ความสัมพันธ์มีทิศทางที่สดใส ", "ดูจากดวงชะตาเรื่องคนใกล้ชิด ", "อิทธิพลของความรักกำลังผลิดอกออกผล "],
+                    ["คนโสดมีโอกาสพบคนถูกใจแบบกะทันหัน ", "คนมีคู่ช่วงนี้จะมีความเข้าใจกันมากขึ้น ", "ความสัมพันธ์กำลังเข้าสู่ช่วงหวานชื่น ", "จะมีเรื่องเซอร์ไพรส์ที่ทำให้คุณยิ้มได้ ", "มิตรภาพจะพัฒนาไปสู่ความผูกพันที่แน่นแฟ้น ", "ช่วงนี้คนรักจะคอยเป็นกำลังใจที่ดี ", "คุณจะเสน่ห์แรงเป็นพิเศษต่อเพศตรงข้าม ", "มีความเข้าใจผิดบางอย่างที่กำลังจะคลี่คลาย ", "ความสัมพันธ์ราบรื่นไม่มีอุปสรรค ", "มีข่าวดีเรื่องความรักที่รอคอย "],
+                    ["คอยซัพพอร์ตกันเป็นอย่างดีครับ", "บรรยากาศรอบตัวเต็มไปด้วยความสุข", "มีความผูกพันและเชื่อใจเต็มร้อย",
+ "ชีวิตรักมีความลงตัวมากขึ้นเรื่อยๆ", "มีความอบอุ่นใจเกิดขึ้นในครอบครัว", "คนรอบข้างจะอิจฉาในความรักของคุณ", "เป็นช่วงเวลาที่ควรเติมความหวานให้กัน", "จะมีเหตุการณ์ที่ทำให้เข้าใจกันมากขึ้น", "รักครั้งนี้มีอนาคตที่มั่นคง", "เป็นช่วงเวลาที่ดีที่สุดในรอบเดือนครับ"]
+                ]
+            },
+            menus: {
+                "ไฟ": ["ข้าวไข่เจียวหมูสับ", "สามชั้นทอดน้ำปลา", "สุกี้น้ำ/แห้ง", "เนื้อผัดพริกไทยดำ", "กุ้งอบวุ้นเส้น"],
+                "ดิน": ["กะเพราหมูกรอบ", "พริกแกงเนื้อเปื่อย", "คะน้าหมูกรอบ", "ต้มยำกุ้งน้ำข้น", "ลาบหมูคั่ว"],
+                "ลม": ["หมูทอดกระเทียม", "คั่วพริกเกลือ", "ผัดพริกอ่อนหมู", "หมูผัดขิง", "ยำหมูยอ"],
+                "น้ำ": ["ข้าวผัดต้มยำ", "ผัดมาม่าขี้เมา", "ข้าวยำไก่แซ่บ", "แกงจืดเต้าหู้หมูสับ", "ผัดฉ่าทะเล"]
+            }
+        };
+
+        function getThaiZodiac(day, month) {
+            const s = [{m:4, d:13, e:"ไฟ"}, {m:5, d:15, e:"ดิน"}, {m:6, d:15, e:"ลม"}, {m:7, d:15, e:"น้ำ"}, {m:8, d:16, e:"ไฟ"}, {m:9, d:17, e:"ดิน"}, {m:10, d:17, e:"ลม"}, {m:11, d:16, e:"น้ำ"}, {m:12, d:16, e:"ไฟ"}, {m:1, d:15, e:"ดิน"}, {m:2, d:13, e:"ลม"}, {m:3, d:15, e:"น้ำ"}];
+            for(let i=0; i<s.length; i++) if(month == s[i].m && day >= s[i].d) return s[i].e;
+            return "ไฟ";
+        }
+
+        function seededRandom(seed) { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+
+        function calculateFullFortune() {
+            const dateVal = document.getElementById('birthdate').value;
+            if(!dateVal) return;
+            const b = new Date(dateVal);
+            const today = new Date();
+            
+            // แยก Seed: static คงที่ (ตัวตน), daily เปลี่ยนทุกวัน (ดวง)
+            const staticSeed = (b.getDate() * 31 + b.getMonth() * 12 + b.getFullYear());
+            const dailySeed = (today.getDate() * 73 + today.getMonth() * 101 + today.getFullYear());
+            
+            const trait = db.dayTraits[b.getDay()];
+            const path = db.lifePath[staticSeed % 9]; // ใช้ staticSeed
+            const element = getThaiZodiac(b.getDate(), b.getMonth() + 1);
+            
+            // ใช้ dailySeed สำหรับดวงรายวัน เพื่อให้เปลี่ยนทุกวัน
+            const getFortune = (cat, idx, offset) => db.fortunes[cat][idx][Math.floor(seededRandom(dailySeed + offset) * db.fortunes[cat][idx].length)];
+            const finalWork = "ดวงของคุณวันนี้ " + getFortune('w', 0, 1) + getFortune('w', 1, 2) + getFortune('w', 2, 3);
+            const finalLove = "ดวงของคุณวันนี้ " + getFortune('l', 0, 4) + getFortune('l', 1, 5) + getFortune('l', 2, 6);
+            
+            const n1 = (dailySeed % 9) + 1; 
+            const n2 = ((dailySeed * 7) % 9) + 1; 
+            const n3 = ((dailySeed * 13) % 9) + 1;
+            
+            const elementMenus = db.menus[element];
+            const dailyMenus = [...elementMenus].sort(() => 0.5 - seededRandom(dailySeed + 99)).slice(0, 3);
+
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').innerHTML = `
+                <span class="highlight">พื้นฐานนิสัย:</span> ${trait}
+                <span class="highlight">รหัสชีวิต:</span> ${path}
+                <div class="divider"></div>
+                <span class="highlight">การงาน/การเงิน:</span> ${finalWork}
+                <span class="highlight">ความรัก:</span> ${finalLove}
+                <div class="divider"></div>
+                <span class="highlight">เลขนำโชควันนี้:</span>
+                <div class="lucky-numbers">${n1} - ${n2} - ${n3}</div>
+                <div class="menu-box">
+                    <span class="highlight" style="margin-top:0;">🍳 เมนูแนะนำวันนี้ (ธาตุ${element})</span>
+                    <div class="menu-item">🍱 ${dailyMenus[0]}</div>
+                    <div class="menu-item">🍱 ${dailyMenus[1]}</div>
+                    <div class="menu-item">🍱 ${dailyMenus[2]}</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
